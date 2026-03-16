@@ -599,6 +599,94 @@
             animation: fadeInUp 0.5s ease-out both;
         }
 
+        /* ── Auth Modal ── */
+        .auth-modal {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 28px;
+            max-width: 340px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(74, 32, 64, 0.25);
+            text-align: center;
+        }
+
+        .auth-modal h3 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .auth-modal p {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .auth-input {
+            width: 100%;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 800;
+            text-align: center;
+            letter-spacing: 4px;
+            padding: 12px;
+            border: 2px solid var(--rose);
+            border-radius: var(--radius-sm);
+            background: var(--rose-bg);
+            color: var(--text);
+            outline: none;
+            transition: var(--transition);
+            margin-bottom: 20px;
+        }
+
+        .auth-input:focus {
+            border-color: var(--lilas);
+            box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.2);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-auth {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--rose), var(--lilas));
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(192, 132, 252, 0.35);
+        }
+
+        .btn-auth.secondary {
+            background: var(--rose-light);
+            color: var(--text);
+        }
+
+        .btn-auth.secondary:hover {
+            background: var(--rose-bg);
+            box-shadow: none;
+        }
+
+        .auth-status {
+            font-size: 0.85rem;
+            color: var(--red);
+            margin-top: 10px;
+            font-weight: 600;
+        }
+
         .card:nth-child(2) {
             animation-delay: 0.1s;
         }
@@ -991,110 +1079,230 @@
             </div>
         </div>
 
-    </div>
-
-    <!-- Edit Modal -->
-    <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
-        <div class="modal">
-            <h3 id="modal-title">Modifier le jour</h3>
-            <div class="modal-option">
-                <label>💊 Pilule prise</label>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="modal-pill" onchange="modalChanged()">
-                    <span class="toggle-slider"></span>
-                </label>
+        <!-- Firebase Auth Overlay -->
+        <div class="modal-overlay" id="auth-overlay">
+            <div class="auth-modal">
+                <h3 id="auth-title">☁️ Synchronisation</h3>
+                <!-- Step 1: Login or Register -->
+                <div id="auth-step-1">
+                    <p>Entre un code secret (6 chiffres/lettres) pour protéger tes données et les synchroniser sur tous
+                        tes appareils.</p>
+                    <input type="password" id="auth-passcode" class="auth-input" placeholder="CODE SECTRET"
+                        maxlength="8">
+                    <div class="auth-buttons">
+                        <button class="btn-auth" onclick="loginWithPasscode()">Me Connecter</button>
+                    </div>
+                    <div class="auth-status" id="auth-error"></div>
+                </div>
             </div>
-            <div class="modal-option">
-                <label>🩸 Règles</label>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="modal-period" onchange="modalChanged()">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
-            <button class="modal-close" onclick="closeModal()">Fermer</button>
         </div>
-    </div>
 
-    <!-- Install Banner -->
-    <div class="install-banner hidden" id="install-banner">
-        <span class="install-banner-text">
-            📲 Pour recevoir des rappels sur iPhone, installe l'app :<br>
-            <strong>Safari → Partager → Sur l'écran d'accueil</strong>
-        </span>
-        <button class="install-banner-close" id="install-banner-close" aria-label="Fermer">✕</button>
-    </div>
+        <!-- Edit Modal -->
+        <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+            <div class="modal">
+                <h3 id="modal-title">Modifier le jour</h3>
+                <div class="modal-option">
+                    <label>💊 Pilule prise</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="modal-pill" onchange="modalChanged()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="modal-option">
+                    <label>🩸 Règles</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="modal-period" onchange="modalChanged()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <button class="modal-close" onclick="closeModal()">Fermer</button>
+            </div>
+        </div>
 
-    <script>
-        // ── Data Layer ──
-        const STORAGE_KEY = 'pilu_data';
-        const REMINDER_KEY = 'pilu_reminder';
+        <!-- Install Banner -->
+        <div class="install-banner hidden" id="install-banner">
+            <span class="install-banner-text">
+                📲 Pour recevoir des rappels sur iPhone, installe l'app :<br>
+                <strong>Safari → Partager → Sur l'écran d'accueil</strong>
+            </span>
+            <button class="install-banner-close" id="install-banner-close" aria-label="Fermer">✕</button>
+        </div>
 
-        function loadData() {
+        }
+
+        // ── Firebase Integration ──
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from
+        "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection } from
+        "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+        apiKey: "AIzaSyDCIcyilXdunQtRRY2ikqidjXLn6BFqy2o",
+        authDomain: "peroutrip-88742.firebaseapp.com",
+        projectId: "peroutrip-88742",
+        storageBucket: "peroutrip-88742.firebasestorage.app",
+        messagingSenderId: "1079632408360",
+        appId: "1:1079632408360:web:48717bbcf43a34b6a46a1d"
+        };
+
+        const fbApp = initializeApp(firebaseConfig);
+        const fbAuth = getAuth(fbApp);
+        const fbDb = getFirestore(fbApp);
+
+        let currentUser = null;
+        let syncUnsubscribe = null;
+
+        // Code secret = Doc ID dans Firestore
+        // Vu qu'on n'a pas de vrai compte, on va signer anonymement l'utilisateur,
+        // et le code secret servira de chemin vers le document (ex: accounts/{passcode}).
+        // TODO: This is a simple MVP auth strategy.
+        let secretCode = localStorage.getItem('pilu_secret_code');
+
+        function initAuth() {
+        onAuthStateChanged(fbAuth, (user) => {
+        if (user) {
+        currentUser = user;
+        if (secretCode) {
+        document.getElementById('auth-overlay').classList.remove('show');
+        startSync();
+        } else {
+        document.getElementById('auth-overlay').classList.add('show');
+        }
+        } else {
+        signInAnonymously(fbAuth).catch(err => {
+        document.getElementById('auth-error').textContent = "Erreur de connexion Firebase.";
+        });
+        }
+        });
+        }
+
+        window.loginWithPasscode = async function() {
+        const code = document.getElementById('auth-passcode').value.trim();
+        const errEl = document.getElementById('auth-error');
+
+        if (code.length < 4) { errEl.textContent="Le code doit faire au moins 4 caractères." ; return; }
+            errEl.textContent="Connexion..." ; // Check network try { // Ensure auth if (!currentUser) await
+            signInAnonymously(fbAuth); secretCode=code; localStorage.setItem('pilu_secret_code', code);
+            document.getElementById('auth-overlay').classList.remove('show'); // First sync merge: // We shouldn't
+            overwrite cloud data with empty local data if we just logged in. // We will handle data merge in startSync.
+            startSync(); } catch (err) { errEl.textContent="Erreur de connexion." ; console.error(err); } }; // ── Data
+            Layer ── const STORAGE_KEY='pilu_data' ; const REMINDER_KEY='pilu_reminder' ; let localDataCache={};
+            function loadData() { if (Object.keys(localDataCache).length> 0) return localDataCache;
             try {
-                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+            localDataCache = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+            return localDataCache;
             } catch { return {}; }
-        }
+            }
 
-        function saveData(data) {
+            function saveData(data) {
+            localDataCache = data;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        }
 
-        function getDay(dateStr) {
+            if (secretCode && currentUser) {
+            const docRef = doc(fbDb, "accounts", secretCode);
+            // Fire-and-forget push to Firebase
+            setDoc(docRef, { data: data }, { merge: true }).catch(console.error);
+            }
+            }
+
+            // Firebase Sync Manager
+            async function startSync() {
+            if (!secretCode || !currentUser) return;
+
+            const docRef = doc(fbDb, "accounts", secretCode);
+
+            // First read to merge local and cloud
+            try {
+            const snap = await getDoc(docRef);
+            const local = loadData();
+            if (snap.exists()) {
+            const cloudData = snap.data().data || {};
+            // Merge: Cloud wins for simplicity if conflict, but let's just take cloud data
+            // In a real app we'd merge by date
+            const merged = { ...local, ...cloudData };
+            saveData(merged); // Saves to local & fires sync to cloud
+            } else {
+            // First time, push local to cloud
+            setDoc(docRef, { data: local });
+            }
+            } catch (err) {
+            console.error("Erreur de synchro initiale:", err);
+            }
+
+            // Realtime listener
+            if (syncUnsubscribe) syncUnsubscribe();
+
+            syncUnsubscribe = onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists() && !docSnap.metadata.hasPendingWrites) {
+            const cloudData = docSnap.data().data || {};
+            // Update cache and localStorage silently without triggering another Firebase write
+            localDataCache = cloudData;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudData));
+
+            renderToday();
+            renderCalendar();
+            renderSummary();
+            }
+            });
+            }
+
+            function getDay(dateStr) {
             const data = loadData();
             return data[dateStr] || { pill: false, period: false };
-        }
+            }
 
-        function setDay(dateStr, info) {
+            function setDay(dateStr, info) {
             const data = loadData();
             data[dateStr] = info;
             saveData(data);
-        }
+            }
 
-        // ── Date Helpers ──
-        function toDateStr(d) {
+            // ── Date Helpers ──
+            function toDateStr(d) {
             return d.getFullYear() + '-' +
-                String(d.getMonth() + 1).padStart(2, '0') + '-' +
-                String(d.getDate()).padStart(2, '0');
-        }
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+            }
 
-        function isToday(d) {
+            function isToday(d) {
             const now = new Date();
             return d.getFullYear() === now.getFullYear() &&
-                d.getMonth() === now.getMonth() &&
-                d.getDate() === now.getDate();
-        }
+            d.getMonth() === now.getMonth() &&
+            d.getDate() === now.getDate();
+            }
 
-        function isFuture(d) {
+            function isFuture(d) {
             const now = new Date();
             now.setHours(0, 0, 0, 0);
             const check = new Date(d);
             check.setHours(0, 0, 0, 0);
             return check > now;
-        }
+            }
 
-        const MONTHS_FR = [
+            const MONTHS_FR = [
             'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
             'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
-        ];
+            ];
 
-        const DAYS_FR = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-        const WEEKDAYS_SHORT = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+            const DAYS_FR = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+            const WEEKDAYS_SHORT = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
-        function formatDateFR(d) {
+            function formatDateFR(d) {
             const day = d.getDate();
             const month = MONTHS_FR[d.getMonth()];
             const year = d.getFullYear();
             const weekday = DAYS_FR[d.getDay()];
             return `${weekday} ${day} ${month} ${year}`;
-        }
+            }
 
-        // ── Today Section ──
-        const today = new Date();
-        const todayStr = toDateStr(today);
+            // ── Today Section ──
+            const today = new Date();
+            const todayStr = toDateStr(today);
 
-        function renderToday() {
+            function renderToday() {
             document.getElementById('today-date').textContent =
-                today.getDate() + ' ' + MONTHS_FR[today.getMonth()];
+            today.getDate() + ' ' + MONTHS_FR[today.getMonth()];
             document.getElementById('today-sub').textContent = formatDateFR(today);
 
             const info = getDay(todayStr);
@@ -1104,13 +1312,13 @@
             const pillLabel = document.getElementById('pill-label');
 
             if (info.pill) {
-                btnPill.classList.add('active');
-                pillIcon.textContent = '✅';
-                pillLabel.textContent = 'Pilule prise !';
+            btnPill.classList.add('active');
+            pillIcon.textContent = '✅';
+            pillLabel.textContent = 'Pilule prise !';
             } else {
-                btnPill.classList.remove('active');
-                pillIcon.textContent = '💊';
-                pillLabel.textContent = "J'ai pris ma pilule";
+            btnPill.classList.remove('active');
+            pillIcon.textContent = '💊';
+            pillLabel.textContent = "J'ai pris ma pilule";
             }
 
             const btnPeriod = document.getElementById('btn-period');
@@ -1118,17 +1326,17 @@
             const periodLabel = document.getElementById('period-label');
 
             if (info.period) {
-                btnPeriod.classList.add('active');
-                periodIcon.textContent = '🩸';
-                periodLabel.textContent = 'Règles en cours';
+            btnPeriod.classList.add('active');
+            periodIcon.textContent = '🩸';
+            periodLabel.textContent = 'Règles en cours';
             } else {
-                btnPeriod.classList.remove('active');
-                periodIcon.textContent = '🩸';
-                periodLabel.textContent = "J'ai mes règles aujourd'hui";
+            btnPeriod.classList.remove('active');
+            periodIcon.textContent = '🩸';
+            periodLabel.textContent = "J'ai mes règles aujourd'hui";
             }
-        }
+            }
 
-        function togglePill() {
+            function togglePill() {
             const info = getDay(todayStr);
             const wasPill = info.pill;
             info.pill = !info.pill;
@@ -1139,13 +1347,13 @@
             animateBtn('btn-pill');
             // Pack countdown
             if (info.pill && !wasPill) {
-                decrementPack();
+            decrementPack();
             } else if (!info.pill && wasPill) {
-                incrementPack();
+            incrementPack();
             }
-        }
+            }
 
-        function togglePeriod() {
+            function togglePeriod() {
             const info = getDay(todayStr);
             info.period = !info.period;
             setDay(todayStr, info);
@@ -1153,460 +1361,437 @@
             renderCalendar();
             renderSummary();
             animateBtn('btn-period');
-        }
+            }
 
-        function animateBtn(id) {
+            function animateBtn(id) {
             const el = document.getElementById(id);
             el.classList.remove('pulse');
             void el.offsetWidth;
             el.classList.add('pulse');
-        }
+            }
 
-        // ── Calendar ──
-        let viewYear = today.getFullYear();
-        let viewMonth = today.getMonth();
+            // ── Calendar ──
+            let viewYear = today.getFullYear();
+            let viewMonth = today.getMonth();
 
-        function changeMonth(delta) {
+            function changeMonth(delta) {
             viewMonth += delta;
-            if (viewMonth < 0) { viewMonth = 11; viewYear--; }
-            if (viewMonth > 11) { viewMonth = 0; viewYear++; }
-            renderCalendar();
-        }
+            if (viewMonth < 0) { viewMonth=11; viewYear--; } if (viewMonth> 11) { viewMonth = 0; viewYear++; }
+                renderCalendar();
+                }
 
-        function renderCalendar() {
-            document.getElementById('calendar-month').textContent =
+                function renderCalendar() {
+                document.getElementById('calendar-month').textContent =
                 MONTHS_FR[viewMonth] + ' ' + viewYear;
 
-            const grid = document.getElementById('calendar-grid');
-            grid.innerHTML = '';
+                const grid = document.getElementById('calendar-grid');
+                grid.innerHTML = '';
 
-            // Weekday headers (Mon-first)
-            WEEKDAYS_SHORT.forEach(w => {
+                // Weekday headers (Mon-first)
+                WEEKDAYS_SHORT.forEach(w => {
                 const el = document.createElement('div');
                 el.className = 'calendar-weekday';
                 el.textContent = w;
                 grid.appendChild(el);
-            });
-
-            const firstDay = new Date(viewYear, viewMonth, 1);
-            let startDay = firstDay.getDay(); // 0=Sun
-            // Convert to Monday-first: Mon=0, Sun=6
-            startDay = (startDay + 6) % 7;
-
-            const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-
-            // Empty cells
-            for (let i = 0; i < startDay; i++) {
-                const el = document.createElement('div');
-                el.className = 'calendar-day empty';
-                grid.appendChild(el);
-            }
-
-            // Day cells
-            for (let d = 1; d <= daysInMonth; d++) {
-                const date = new Date(viewYear, viewMonth, d);
-                const dateStr = toDateStr(date);
-                const info = getDay(dateStr);
-                const future = isFuture(date);
-
-                const el = document.createElement('div');
-                el.className = 'calendar-day';
-
-                if (isToday(date)) el.classList.add('today');
-                if (info.period) el.classList.add('period-day');
-                if (future) el.classList.add('future');
-
-                const numSpan = document.createElement('span');
-                numSpan.className = 'day-num';
-                numSpan.textContent = d;
-
-                const iconsSpan = document.createElement('span');
-                iconsSpan.className = 'day-icons';
-
-                if (!future) {
-                    iconsSpan.textContent = info.pill ? '✅' : '❌';
-                } else {
-                    iconsSpan.textContent = '⬜';
-                }
-
-                el.appendChild(numSpan);
-                el.appendChild(iconsSpan);
-
-                el.addEventListener('click', () => openModal(dateStr));
-                grid.appendChild(el);
-            }
-        }
-
-        // ── Modal ──
-        let modalDateStr = null;
-
-        function openModal(dateStr) {
-            modalDateStr = dateStr;
-            const parts = dateStr.split('-');
-            const d = new Date(parts[0], parts[1] - 1, parts[2]);
-            document.getElementById('modal-title').textContent =
-                '📅 ' + d.getDate() + ' ' + MONTHS_FR[d.getMonth()] + ' ' + d.getFullYear();
-
-            const info = getDay(dateStr);
-            document.getElementById('modal-pill').checked = info.pill;
-            document.getElementById('modal-period').checked = info.period;
-
-            document.getElementById('modal-overlay').classList.add('show');
-        }
-
-        function closeModal() {
-            document.getElementById('modal-overlay').classList.remove('show');
-            modalDateStr = null;
-        }
-
-        function closeModalOutside(e) {
-            if (e.target === document.getElementById('modal-overlay')) closeModal();
-        }
-
-        function modalChanged() {
-            if (!modalDateStr) return;
-            const info = {
-                pill: document.getElementById('modal-pill').checked,
-                period: document.getElementById('modal-period').checked
-            };
-            setDay(modalDateStr, info);
-            renderCalendar();
-            if (modalDateStr === todayStr) renderToday();
-            renderSummary();
-        }
-
-        // ── Reminder ──
-        let reminderInterval = null;
-
-
-
-        function setReminder() {
-            const time = document.getElementById('reminder-time').value;
-            if (!time) return;
-
-            // Request notification permission
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission().then(perm => {
-                    if (perm === 'granted') {
-                        saveAndStartReminder(time);
-                    } else {
-                        updateReminderStatus('⚠️ Notifications refusées par le navigateur');
-                    }
                 });
-            } else if ('Notification' in window && Notification.permission === 'granted') {
-                saveAndStartReminder(time);
-            } else if ('Notification' in window && Notification.permission === 'denied') {
-                updateReminderStatus('⚠️ Notifications bloquées. Modifie les paramètres du navigateur.');
-            } else {
-                updateReminderStatus('⚠️ Notifications non supportées');
-            }
-        }
 
-        function saveAndStartReminder(time) {
-            const delayH = parseInt(document.getElementById('alert-delay').value) || 2;
-            localStorage.setItem(REMINDER_KEY, JSON.stringify({ time, delayH }));
-            startReminderCheck(time, delayH);
-            notifySWReminder(time);
-            updateReminderStatus(`✅ Rappel activé à ${time}`);
-        }
+                const firstDay = new Date(viewYear, viewMonth, 1);
+                let startDay = firstDay.getDay(); // 0=Sun
+                // Convert to Monday-first: Mon=0, Sun=6
+                startDay = (startDay + 6) % 7;
 
-        function startReminderCheck(time, delayH) {
-            if (reminderInterval) clearInterval(reminderInterval);
-            updateReminderStatus(`✅ Rappel programmé à ${time}`);
+                const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
 
-            let notifiedToday = false;
-            let secondAlertSent = false;
+                // Empty cells
+                for (let i = 0; i < startDay; i++) { const el=document.createElement('div');
+                    el.className='calendar-day empty' ; grid.appendChild(el); } // Day cells for (let d=1; d
+                    <=daysInMonth; d++) { const date=new Date(viewYear, viewMonth, d); const dateStr=toDateStr(date);
+                    const info=getDay(dateStr); const future=isFuture(date); const el=document.createElement('div');
+                    el.className='calendar-day' ; if (isToday(date)) el.classList.add('today'); if (info.period)
+                    el.classList.add('period-day'); if (future) el.classList.add('future'); const
+                    numSpan=document.createElement('span'); numSpan.className='day-num' ; numSpan.textContent=d; const
+                    iconsSpan=document.createElement('span'); iconsSpan.className='day-icons' ; if (!future) {
+                    iconsSpan.textContent=info.pill ? '✅' : '❌' ; } else { iconsSpan.textContent='⬜' ; }
+                    el.appendChild(numSpan); el.appendChild(iconsSpan); el.addEventListener('click', ()=>
+                    openModal(dateStr));
+                    grid.appendChild(el);
+                    }
+                    }
 
-            // Parse reminder hour/min
-            const [rH, rM] = time.split(':').map(Number);
+                    // ── Modal ──
+                    let modalDateStr = null;
 
-            reminderInterval = setInterval(() => {
-                const now = new Date();
-                const nowTime = String(now.getHours()).padStart(2, '0') + ':' +
+                    function openModal(dateStr) {
+                    modalDateStr = dateStr;
+                    const parts = dateStr.split('-');
+                    const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                    document.getElementById('modal-title').textContent =
+                    '📅 ' + d.getDate() + ' ' + MONTHS_FR[d.getMonth()] + ' ' + d.getFullYear();
+
+                    const info = getDay(dateStr);
+                    document.getElementById('modal-pill').checked = info.pill;
+                    document.getElementById('modal-period').checked = info.period;
+
+                    document.getElementById('modal-overlay').classList.add('show');
+                    }
+
+                    function closeModal() {
+                    document.getElementById('modal-overlay').classList.remove('show');
+                    modalDateStr = null;
+                    }
+
+                    function closeModalOutside(e) {
+                    if (e.target === document.getElementById('modal-overlay')) closeModal();
+                    }
+
+                    function modalChanged() {
+                    if (!modalDateStr) return;
+                    const info = {
+                    pill: document.getElementById('modal-pill').checked,
+                    period: document.getElementById('modal-period').checked
+                    };
+                    setDay(modalDateStr, info);
+                    renderCalendar();
+                    if (modalDateStr === todayStr) renderToday();
+                    renderSummary();
+                    }
+
+                    // ── Reminder ──
+                    let reminderInterval = null;
+
+
+
+                    function setReminder() {
+                    const time = document.getElementById('reminder-time').value;
+                    if (!time) return;
+
+                    // Request notification permission
+                    if ('Notification' in window && Notification.permission === 'default') {
+                    Notification.requestPermission().then(perm => {
+                    if (perm === 'granted') {
+                    saveAndStartReminder(time);
+                    } else {
+                    updateReminderStatus('⚠️ Notifications refusées par le navigateur');
+                    }
+                    });
+                    } else if ('Notification' in window && Notification.permission === 'granted') {
+                    saveAndStartReminder(time);
+                    } else if ('Notification' in window && Notification.permission === 'denied') {
+                    updateReminderStatus('⚠️ Notifications bloquées. Modifie les paramètres du navigateur.');
+                    } else {
+                    updateReminderStatus('⚠️ Notifications non supportées');
+                    }
+                    }
+
+                    function saveAndStartReminder(time) {
+                    const delayH = parseInt(document.getElementById('alert-delay').value) || 2;
+                    localStorage.setItem(REMINDER_KEY, JSON.stringify({ time, delayH }));
+                    startReminderCheck(time, delayH);
+                    notifySWReminder(time);
+                    updateReminderStatus(`✅ Rappel activé à ${time}`);
+                    }
+
+                    function startReminderCheck(time, delayH) {
+                    if (reminderInterval) clearInterval(reminderInterval);
+                    updateReminderStatus(`✅ Rappel programmé à ${time}`);
+
+                    let notifiedToday = false;
+                    let secondAlertSent = false;
+
+                    // Parse reminder hour/min
+                    const [rH, rM] = time.split(':').map(Number);
+
+                    reminderInterval = setInterval(() => {
+                    const now = new Date();
+                    const nowTime = String(now.getHours()).padStart(2, '0') + ':' +
                     String(now.getMinutes()).padStart(2, '0');
 
-                if (nowTime === time && !notifiedToday) {
+                    if (nowTime === time && !notifiedToday) {
                     notifiedToday = true;
                     secondAlertSent = false;
                     sendNotification();
-                }
+                    }
 
-                // Second alert check
-                if (notifiedToday && !secondAlertSent && delayH > 0) {
+                    // Second alert check
+                    if (notifiedToday && !secondAlertSent && delayH > 0) {
                     const secondH = (rH + delayH) % 24;
                     const secondTime = String(secondH).padStart(2, '0') + ':' + String(rM).padStart(2, '0');
                     if (nowTime === secondTime) {
-                        const todayInfo = getDay(todayStr);
-                        if (!todayInfo.pill) {
-                            secondAlertSent = true;
-                            sendSecondAlert();
-                        }
+                    const todayInfo = getDay(todayStr);
+                    if (!todayInfo.pill) {
+                    secondAlertSent = true;
+                    sendSecondAlert();
                     }
-                }
+                    }
+                    }
 
-                // Reset at midnight
-                if (nowTime === '00:00') {
+                    // Reset at midnight
+                    if (nowTime === '00:00') {
                     notifiedToday = false;
                     secondAlertSent = false;
-                }
-            }, 15000); // check every 15s
-        }
+                    }
+                    }, 15000); // check every 15s
+                    }
 
-        function sendNotification() {
-            if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification("N'oublie pas ta pilule ! 💊", {
+                    function sendNotification() {
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification("N'oublie pas ta pilule ! 💊", {
                     body: 'Il est temps de prendre ta pilule contraceptive 🌸',
-                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80" font-size="80">💊</text></svg>'
-                });
-            }
-        }
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80"
+                            font-size="80">💊</text></svg>'
+                    });
+                    }
+                    }
 
-        function sendSecondAlert() {
-            if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('Tu as oublié ta pilule aujourd\'hui ⚠️', {
+                    function sendSecondAlert() {
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                    new Notification('Tu as oublié ta pilule aujourd\'hui ⚠️', {
                     body: 'Tu n\'as pas encore marqué ta pilule comme prise !',
-                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80" font-size="80">⚠️</text></svg>',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80"
+                            font-size="80">⚠️</text></svg>',
                     tag: 'pill-second-alert',
                     renotify: true
-                });
-            }
-        }
-
-        function saveSecondAlert() {
-            const delayH = parseInt(document.getElementById('alert-delay').value) || 2;
-            const saved = JSON.parse(localStorage.getItem(REMINDER_KEY) || '{}');
-            saved.delayH = delayH;
-            localStorage.setItem(REMINDER_KEY, JSON.stringify(saved));
-            if (saved.time) {
-                startReminderCheck(saved.time, delayH);
-            }
-            const el = document.getElementById('second-alert-status');
-            el.textContent = `✅ 2ᵉ alerte ${delayH}h après le rappel`;
-        }
-
-        function updateReminderStatus(msg) {
-            const el = document.getElementById('reminder-status');
-            el.textContent = msg;
-            el.className = 'reminder-status' + (msg.startsWith('✅') ? ' active-reminder' : '');
-        }
-
-        // ── Pack Countdown ──
-        const PACK_KEY = 'pilu_pack';
-
-        function loadPack() {
-            const saved = localStorage.getItem(PACK_KEY);
-            const count = saved !== null ? parseInt(saved) : 21;
-            document.getElementById('pack-count').value = count;
-            renderPackStatus(count);
-        }
-
-        function savePackCount() {
-            const val = parseInt(document.getElementById('pack-count').value) || 0;
-            localStorage.setItem(PACK_KEY, val);
-            renderPackStatus(val);
-        }
-
-        function decrementPack() {
-            let val = parseInt(localStorage.getItem(PACK_KEY));
-            if (isNaN(val)) val = 21;
-            val = Math.max(0, val - 1);
-            localStorage.setItem(PACK_KEY, val);
-            document.getElementById('pack-count').value = val;
-            renderPackStatus(val);
-        }
-
-        function incrementPack() {
-            let val = parseInt(localStorage.getItem(PACK_KEY));
-            if (isNaN(val)) val = 21;
-            val = val + 1;
-            localStorage.setItem(PACK_KEY, val);
-            document.getElementById('pack-count').value = val;
-            renderPackStatus(val);
-        }
-
-        function renderPackStatus(count) {
-            const statusEl = document.getElementById('pack-status');
-            const barEl = document.getElementById('pack-bar');
-            const maxPills = 21;
-            const pct = Math.min(100, Math.max(0, (count / maxPills) * 100));
-            barEl.style.width = pct + '%';
-            barEl.className = 'pack-progress-bar' + (count <= 3 ? ' low' : '');
-
-            if (count <= 0) {
-                statusEl.textContent = '🚨 Plaquette terminée ! Pense à en commencer une nouvelle.';
-                statusEl.className = 'pack-status warning';
-            } else if (count <= 3) {
-                statusEl.textContent = `⚠️ Plus que ${count} pilule${count > 1 ? 's' : ''} ! Pense à renouveler ta plaquette.`;
-                statusEl.className = 'pack-status warning';
-            } else {
-                statusEl.textContent = `${count} pilule${count > 1 ? 's' : ''} restante${count > 1 ? 's' : ''}`;
-                statusEl.className = 'pack-status ok';
-            }
-        }
-
-        // ── Summary ──
-        function getPeriodStarts() {
-            const data = loadData();
-            const periodDays = [];
-            Object.keys(data).forEach(dateStr => {
-                if (data[dateStr].period) periodDays.push(dateStr);
-            });
-            periodDays.sort();
-
-            const periodStarts = [];
-            let lastPeriodDate = null;
-            periodDays.forEach(dateStr => {
-                const d = new Date(dateStr + 'T00:00:00');
-                if (!lastPeriodDate) {
-                    periodStarts.push(d);
-                } else {
-                    const diff = (d - lastPeriodDate) / (1000 * 60 * 60 * 24);
-                    if (diff > 2) {
-                        periodStarts.push(d);
+                    });
                     }
-                }
-                lastPeriodDate = d;
-            });
-            return periodStarts;
-        }
+                    }
 
-        function renderSummary() {
-            const periodStarts = getPeriodStarts();
-
-            // Reset
-            document.getElementById('cycle-length').textContent = '—';
-            document.getElementById('days-since').textContent = '—';
-            document.getElementById('avg-cycle').textContent = '—';
-            document.getElementById('next-period').textContent = '—';
-            document.getElementById('fertility-window').style.display = 'none';
-
-            if (periodStarts.length === 0) return;
-
-            // Compute cycle lengths
-            const cycleLengths = [];
-            for (let i = 1; i < periodStarts.length; i++) {
-                const diff = Math.round((periodStarts[i] - periodStarts[i - 1]) / (1000 * 60 * 60 * 24));
-                if (diff > 15 && diff < 60) cycleLengths.push(diff); // sane range
-            }
-
-            // Last cycle length
-            if (cycleLengths.length > 0) {
-                document.getElementById('cycle-length').textContent = cycleLengths[cycleLengths.length - 1];
-            }
-
-            // Average cycle
-            let avgCycle = 28; // default
-            if (cycleLengths.length > 0) {
-                avgCycle = Math.round(cycleLengths.reduce((a, b) => a + b, 0) / cycleLengths.length);
-                document.getElementById('avg-cycle').textContent = avgCycle + 'j';
-            }
-
-            // Days since last period
-            const lastPeriodStart = periodStarts[periodStarts.length - 1];
-            const now = new Date();
-            now.setHours(0, 0, 0, 0);
-            const daysSince = Math.floor((now - lastPeriodStart) / (1000 * 60 * 60 * 24));
-            document.getElementById('days-since').textContent = daysSince >= 0 ? daysSince : '—';
-
-            // Predicted next period
-            if (cycleLengths.length > 0) {
-                const nextDate = new Date(lastPeriodStart);
-                nextDate.setDate(nextDate.getDate() + avgCycle);
-                const nextStr = nextDate.getDate() + ' ' + MONTHS_FR[nextDate.getMonth()];
-                document.getElementById('next-period').textContent = nextStr;
-            }
-
-            // Fertility window (ovulation ≈ avgCycle - 14, fertile J-5 to J+1)
-            if (cycleLengths.length > 0) {
-                const ovulationDay = avgCycle - 14;
-                const fertStart = Math.max(1, ovulationDay - 5);
-                const fertEnd = ovulationDay + 1;
-
-                const fertStartDate = new Date(lastPeriodStart);
-                fertStartDate.setDate(fertStartDate.getDate() + fertStart);
-                const fertEndDate = new Date(lastPeriodStart);
-                fertEndDate.setDate(fertEndDate.getDate() + fertEnd);
-
-                const fertEl = document.getElementById('fertility-window');
-                const fertText = document.getElementById('fertility-text');
-                fertText.textContent = `Fenêtre de fertilité estimée : J${fertStart}–J${fertEnd} (${fertStartDate.getDate()} ${MONTHS_FR[fertStartDate.getMonth()]} – ${fertEndDate.getDate()} ${MONTHS_FR[fertEndDate.getMonth()]})`;
-                fertEl.style.display = 'block';
-            }
-        }
-
-        // ── Service Worker & PWA ──
-        let swRegistration = null;
-
-        async function registerSW() {
-            if ('serviceWorker' in navigator) {
-                try {
-                    swRegistration = await navigator.serviceWorker.register('./sw.js');
-                    console.log('Service Worker registered');
-                } catch (err) {
-                    console.log('SW registration failed:', err);
-                }
-            }
-        }
-
-        // Send reminder time to the service worker
-        function notifySWReminder(timeStr) {
-            if (swRegistration && swRegistration.active) {
-                const [h, m] = timeStr.split(':').map(Number);
-                swRegistration.active.postMessage({
-                    type: 'SCHEDULE_NOTIFICATION',
-                    hour: h,
-                    minute: m
-                });
-            }
-        }
-
-        // ── Install Banner ──
-        function checkInstallBanner() {
-            const isStandalone = window.navigator.standalone === true ||
-                window.matchMedia('(display-mode: standalone)').matches;
-            const dismissed = localStorage.getItem('pilu_banner_dismissed');
-
-            const banner = document.getElementById('install-banner');
-            const closeBtn = document.getElementById('install-banner-close');
-
-            if (!isStandalone && !dismissed) {
-                banner.classList.remove('hidden');
-            }
-
-            closeBtn.addEventListener('click', () => {
-                banner.classList.add('hidden');
-                localStorage.setItem('pilu_banner_dismissed', '1');
-            });
-        }
-
-        // ── Load Reminder with second alert ──
-        function loadReminder() {
-            try {
-                const saved = JSON.parse(localStorage.getItem(REMINDER_KEY));
-                if (saved && saved.time) {
-                    document.getElementById('reminder-time').value = saved.time;
-                    const delayH = saved.delayH || 2;
-                    document.getElementById('alert-delay').value = delayH;
+                    function saveSecondAlert() {
+                    const delayH = parseInt(document.getElementById('alert-delay').value) || 2;
+                    const saved = JSON.parse(localStorage.getItem(REMINDER_KEY) || '{}');
+                    saved.delayH = delayH;
+                    localStorage.setItem(REMINDER_KEY, JSON.stringify(saved));
+                    if (saved.time) {
                     startReminderCheck(saved.time, delayH);
+                    }
                     const el = document.getElementById('second-alert-status');
                     el.textContent = `✅ 2ᵉ alerte ${delayH}h après le rappel`;
-                }
-            } catch { }
-        }
+                    }
 
-        // ── Init ──
-        function init() {
-            renderToday();
-            renderCalendar();
-            renderSummary();
-            loadPack();
-            loadReminder();
-            registerSW();
-            checkInstallBanner();
-        }
+                    function updateReminderStatus(msg) {
+                    const el = document.getElementById('reminder-status');
+                    el.textContent = msg;
+                    el.className = 'reminder-status' + (msg.startsWith('✅') ? ' active-reminder' : '');
+                    }
 
-        init();
-    </script>
+                    // ── Pack Countdown ──
+                    const PACK_KEY = 'pilu_pack';
+
+                    function loadPack() {
+                    const saved = localStorage.getItem(PACK_KEY);
+                    const count = saved !== null ? parseInt(saved) : 21;
+                    document.getElementById('pack-count').value = count;
+                    renderPackStatus(count);
+                    }
+
+                    function savePackCount() {
+                    const val = parseInt(document.getElementById('pack-count').value) || 0;
+                    localStorage.setItem(PACK_KEY, val);
+                    renderPackStatus(val);
+                    }
+
+                    function decrementPack() {
+                    let val = parseInt(localStorage.getItem(PACK_KEY));
+                    if (isNaN(val)) val = 21;
+                    val = Math.max(0, val - 1);
+                    localStorage.setItem(PACK_KEY, val);
+                    document.getElementById('pack-count').value = val;
+                    renderPackStatus(val);
+                    }
+
+                    function incrementPack() {
+                    let val = parseInt(localStorage.getItem(PACK_KEY));
+                    if (isNaN(val)) val = 21;
+                    val = val + 1;
+                    localStorage.setItem(PACK_KEY, val);
+                    document.getElementById('pack-count').value = val;
+                    renderPackStatus(val);
+                    }
+
+                    function renderPackStatus(count) {
+                    const statusEl = document.getElementById('pack-status');
+                    const barEl = document.getElementById('pack-bar');
+                    const maxPills = 21;
+                    const pct = Math.min(100, Math.max(0, (count / maxPills) * 100));
+                    barEl.style.width = pct + '%';
+                    barEl.className = 'pack-progress-bar' + (count <= 3 ? ' low' : '' ); if (count <=0) {
+                        statusEl.textContent='🚨 Plaquette terminée ! Pense à en commencer une nouvelle.' ;
+                        statusEl.className='pack-status warning' ; } else if (count <=3) { statusEl.textContent=`⚠️ Plus
+                        que ${count} pilule${count> 1 ? 's' : ''} ! Pense à renouveler ta plaquette.`;
+                        statusEl.className = 'pack-status warning';
+                        } else {
+                        statusEl.textContent = `${count} pilule${count > 1 ? 's' : ''} restante${count > 1 ? 's' : ''}`;
+                        statusEl.className = 'pack-status ok';
+                        }
+                        }
+
+                        // ── Summary ──
+                        function getPeriodStarts() {
+                        const data = loadData();
+                        const periodDays = [];
+                        Object.keys(data).forEach(dateStr => {
+                        if (data[dateStr].period) periodDays.push(dateStr);
+                        });
+                        periodDays.sort();
+
+                        const periodStarts = [];
+                        let lastPeriodDate = null;
+                        periodDays.forEach(dateStr => {
+                        const d = new Date(dateStr + 'T00:00:00');
+                        if (!lastPeriodDate) {
+                        periodStarts.push(d);
+                        } else {
+                        const diff = (d - lastPeriodDate) / (1000 * 60 * 60 * 24);
+                        if (diff > 2) {
+                        periodStarts.push(d);
+                        }
+                        }
+                        lastPeriodDate = d;
+                        });
+                        return periodStarts;
+                        }
+
+                        function renderSummary() {
+                        const periodStarts = getPeriodStarts();
+
+                        // Reset
+                        document.getElementById('cycle-length').textContent = '—';
+                        document.getElementById('days-since').textContent = '—';
+                        document.getElementById('avg-cycle').textContent = '—';
+                        document.getElementById('next-period').textContent = '—';
+                        document.getElementById('fertility-window').style.display = 'none';
+
+                        if (periodStarts.length === 0) return;
+
+                        // Compute cycle lengths
+                        const cycleLengths = [];
+                        for (let i = 1; i < periodStarts.length; i++) { const diff=Math.round((periodStarts[i] -
+                            periodStarts[i - 1]) / (1000 * 60 * 60 * 24)); if (diff> 15 && diff < 60)
+                                cycleLengths.push(diff); // sane range } // Last cycle length if (cycleLengths.length>
+                                0) {
+                                document.getElementById('cycle-length').textContent = cycleLengths[cycleLengths.length -
+                                1];
+                                }
+
+                                // Average cycle
+                                let avgCycle = 28; // default
+                                if (cycleLengths.length > 0) {
+                                avgCycle = Math.round(cycleLengths.reduce((a, b) => a + b, 0) / cycleLengths.length);
+                                document.getElementById('avg-cycle').textContent = avgCycle + 'j';
+                                }
+
+                                // Days since last period
+                                const lastPeriodStart = periodStarts[periodStarts.length - 1];
+                                const now = new Date();
+                                now.setHours(0, 0, 0, 0);
+                                const daysSince = Math.floor((now - lastPeriodStart) / (1000 * 60 * 60 * 24));
+                                document.getElementById('days-since').textContent = daysSince >= 0 ? daysSince : '—';
+
+                                // Predicted next period
+                                if (cycleLengths.length > 0) {
+                                const nextDate = new Date(lastPeriodStart);
+                                nextDate.setDate(nextDate.getDate() + avgCycle);
+                                const nextStr = nextDate.getDate() + ' ' + MONTHS_FR[nextDate.getMonth()];
+                                document.getElementById('next-period').textContent = nextStr;
+                                }
+
+                                // Fertility window (ovulation ≈ avgCycle - 14, fertile J-5 to J+1)
+                                if (cycleLengths.length > 0) {
+                                const ovulationDay = avgCycle - 14;
+                                const fertStart = Math.max(1, ovulationDay - 5);
+                                const fertEnd = ovulationDay + 1;
+
+                                const fertStartDate = new Date(lastPeriodStart);
+                                fertStartDate.setDate(fertStartDate.getDate() + fertStart);
+                                const fertEndDate = new Date(lastPeriodStart);
+                                fertEndDate.setDate(fertEndDate.getDate() + fertEnd);
+
+                                const fertEl = document.getElementById('fertility-window');
+                                const fertText = document.getElementById('fertility-text');
+                                fertText.textContent = `Fenêtre de fertilité estimée : J${fertStart}–J${fertEnd}
+                                (${fertStartDate.getDate()} ${MONTHS_FR[fertStartDate.getMonth()]} –
+                                ${fertEndDate.getDate()} ${MONTHS_FR[fertEndDate.getMonth()]})`;
+                                fertEl.style.display = 'block';
+                                }
+                                }
+
+                                // ── Service Worker & PWA ──
+                                let swRegistration = null;
+
+                                async function registerSW() {
+                                if ('serviceWorker' in navigator) {
+                                try {
+                                swRegistration = await navigator.serviceWorker.register('./sw.js');
+                                console.log('Service Worker registered');
+                                } catch (err) {
+                                console.log('SW registration failed:', err);
+                                }
+                                }
+                                }
+
+                                // Send reminder time to the service worker
+                                function notifySWReminder(timeStr) {
+                                if (swRegistration && swRegistration.active) {
+                                const [h, m] = timeStr.split(':').map(Number);
+                                swRegistration.active.postMessage({
+                                type: 'SCHEDULE_NOTIFICATION',
+                                hour: h,
+                                minute: m
+                                });
+                                }
+                                }
+
+                                // ── Install Banner ──
+                                function checkInstallBanner() {
+                                const isStandalone = window.navigator.standalone === true ||
+                                window.matchMedia('(display-mode: standalone)').matches;
+                                const dismissed = localStorage.getItem('pilu_banner_dismissed');
+
+                                const banner = document.getElementById('install-banner');
+                                const closeBtn = document.getElementById('install-banner-close');
+
+                                if (!isStandalone && !dismissed) {
+                                banner.classList.remove('hidden');
+                                }
+
+                                closeBtn.addEventListener('click', () => {
+                                banner.classList.add('hidden');
+                                localStorage.setItem('pilu_banner_dismissed', '1');
+                                });
+                                }
+
+                                // ── Load Reminder with second alert ──
+                                function loadReminder() {
+                                try {
+                                const saved = JSON.parse(localStorage.getItem(REMINDER_KEY));
+                                if (saved && saved.time) {
+                                document.getElementById('reminder-time').value = saved.time;
+                                const delayH = saved.delayH || 2;
+                                document.getElementById('alert-delay').value = delayH;
+                                startReminderCheck(saved.time, delayH);
+                                const el = document.getElementById('second-alert-status');
+                                el.textContent = `✅ 2ᵉ alerte ${delayH}h après le rappel`;
+                                }
+                                } catch { }
+                                }
+
+                                // ── Init ──
+                                function init() {
+                                // First load local data instantly for UI
+                                loadData();
+                                renderToday();
+                                renderCalendar();
+                                renderSummary();
+                                loadPack();
+                                loadReminder();
+                                registerSW();
+                                checkInstallBanner();
+
+                                // Then initialize Firebase Auth (shows modal if no secret code)
+                                initAuth();
+                                }
+
+                                init();
+                                </script>
 </body>
 
 </html>
