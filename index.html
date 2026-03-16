@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Suivi Pilule & Cycle</title>
+    <meta name="description" content="Application de suivi quotidien de pilule contraceptive et du cycle menstruel.">
+    <!-- PWA Meta -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#f9a8d4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Pilule">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ── Reset & Base ── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --rose: #f9a8d4;
+            --rose-light: #fce4f0;
+            --rose-bg: #fff7fb;
+            --lilas: #c084fc;
+            --lilas-light: #e9d5ff;
+            --lilas-dark: #a855f7;
+            --white: #ffffff;
+            --text: #4a2040;
+            --text-light: #7c5270;
+            --green: #34d399;
+            --green-bg: #d1fae5;
+            --red: #fb7185;
+            --red-bg: #ffe4e6;
+            --shadow: 0 4px 24px rgba(201, 132, 252, 0.15);
+            --shadow-hover: 0 8px 32px rgba(201, 132, 252, 0.25);
+            --radius: 20px;
+            --radius-sm: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--rose-bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Decorative Background ── */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -120px;
+            right: -120px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(192, 132, 252, 0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -100px;
+            left: -100px;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(249, 168, 212, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Container ── */
+        .app {
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--rose), var(--lilas));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .header .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--lilas);
+            margin-bottom: 16px;
+        }
+
+        /* ── Today Section ── */
+        .today-date {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 6px;
+        }
+
+        .today-sub {
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--text-light);
+            margin-bottom: 24px;
+        }
+
+        .today-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 20px;
+            border: 2px solid transparent;
+            border-radius: var(--radius-sm);
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-toggle::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-toggle:active {
+            transform: scale(0.97);
+        }
+
+        /* Pill button states */
+        .btn-pill {
+            background: var(--rose-light);
+            color: var(--text);
+            border-color: var(--rose);
+        }
+
+        .btn-pill:hover {
+            background: var(--rose);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249, 168, 212, 0.4);
+        }
+
+        .btn-pill.active {
+            background: linear-gradient(135deg, var(--green), #6ee7b7);
+            border-color: var(--green);
+            color: var(--white);
+            box-shadow: 0 6px 20px rgba(52, 211, 153, 0.3);
+        }
+
+        .btn-pill.active:hover {
+            box-shadow: 0 8px 24px rgba(52, 211, 153, 0.45);
+        }
+
+        /* Period button states */
+        .btn-period {
+            background: var(--lilas-light);
+            color: var(--text);
+            border-color: var(--lilas);
+        }
+
+        .btn-period:hover {
+            background: var(--lilas);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(192, 132, 252, 0.4);
+        }
+
+        .btn-period.active {
+            background: linear-gradient(135deg, var(--lilas), var(--lilas-dark));
+            border-color: var(--lilas-dark);
+            color: var(--white);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.3);
+        }
+
+        .btn-check {
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+        /* ── Calendar ── */
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .calendar-nav button {
+            background: var(--rose-light);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+        }
+
+        .calendar-nav button:hover {
+            background: var(--rose);
+            color: var(--white);
+            transform: scale(1.1);
+        }
+
+        .calendar-month {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            text-transform: capitalize;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-light);
+            padding: 6px 0;
+            text-transform: uppercase;
+        }
+
+        .calendar-day {
+            position: relative;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+            font-weight: 600;
+            gap: 1px;
+        }
+
+        .calendar-day:not(.empty):hover {
+            background: var(--rose-light);
+            transform: scale(1.08);
+        }
+
+        .calendar-day.today {
+            border: 2px solid var(--lilas);
+            font-weight: 800;
+        }
+
+        .calendar-day.period-day {
+            background: rgba(249, 168, 212, 0.2);
+        }
+
+        .calendar-day .day-num {
+            font-size: 0.8rem;
+            line-height: 1;
+        }
+
+        .calendar-day .day-icons {
+            display: flex;
+            gap: 1px;
+            font-size: 0.6rem;
+            line-height: 1;
+            min-height: 12px;
+        }
+
+        .calendar-day.empty {
+            cursor: default;
+        }
+
+        .calendar-day.future .day-num {
+            color: var(--text-light);
+            opacity: 0.5;
+        }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(74, 32, 64, 0.4);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 28px;
+            max-width: 340px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(74, 32, 64, 0.25);
+            transform: scale(0.9) translateY(20px);
+            transition: var(--transition);
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal h3 {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--text);
+            text-align: center;
+        }
+
+        .modal-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--rose-light);
+        }
+
+        .modal-option:last-of-type {
+            border-bottom: none;
+        }
+
+        .modal-option label {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: #e2e8f0;
+            border-radius: 28px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--white);
+            left: 3px;
+            top: 3px;
+            transition: var(--transition);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .toggle-switch input:checked+.toggle-slider {
+            background: linear-gradient(135deg, var(--rose), var(--lilas));
+        }
+
+        .toggle-switch input:checked+.toggle-slider::before {
+            transform: translateX(22px);
+        }
+
+        .modal-close {
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--rose), var(--lilas));
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(192, 132, 252, 0.35);
+        }
+
+        /* ── Reminder ── */
+        .reminder-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .reminder-row label {
+            font-weight: 700;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        .reminder-time {
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 10px 14px;
+            border: 2px solid var(--rose);
+            border-radius: var(--radius-sm);
+            background: var(--rose-bg);
+            color: var(--text);
+            outline: none;
+            transition: var(--transition);
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .reminder-time:focus {
+            border-color: var(--lilas);
+            box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.2);
+        }
+
+        .btn-reminder {
+            padding: 10px 18px;
+            background: linear-gradient(135deg, var(--rose), var(--lilas));
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .btn-reminder:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(192, 132, 252, 0.35);
+        }
+
+        .reminder-status {
+            width: 100%;
+            margin-top: 8px;
+            font-size: 0.82rem;
+            color: var(--text-light);
+            text-align: center;
+        }
+
+        .reminder-status.active-reminder {
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        /* ── Summary ── */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .summary-item {
+            background: linear-gradient(135deg, var(--rose-light), var(--lilas-light));
+            border-radius: var(--radius-sm);
+            padding: 18px 14px;
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--lilas-dark), var(--rose));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .summary-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        /* ── Legend ── */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            justify-content: center;
+            margin-top: 14px;
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeInUp 0.5s ease-out both;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .card:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .card:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+        }
+
+        .pulse {
+            animation: pulse 0.4s ease-in-out;
+        }
+
+        /* ── Cycle Info ── */
+        .cycle-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .cycle-info-item {
+            background: linear-gradient(135deg, var(--rose-light), var(--lilas-light));
+            border-radius: var(--radius-sm);
+            padding: 14px 10px;
+            text-align: center;
+        }
+
+        .cycle-info-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--lilas-dark), var(--rose));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .cycle-info-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        .cycle-prediction {
+            background: var(--rose-light);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .cycle-prediction .emoji {
+            font-size: 1rem;
+        }
+
+        .fertility-window {
+            background: linear-gradient(135deg, rgba(192, 132, 252, 0.12), rgba(249, 168, 212, 0.12));
+            border: 1px dashed var(--lilas);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-light);
+            text-align: center;
+        }
+
+        /* ── Pack Countdown ── */
+        .pack-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .pack-row label {
+            font-weight: 700;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        .pack-input {
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            width: 70px;
+            padding: 10px 12px;
+            border: 2px solid var(--rose);
+            border-radius: var(--radius-sm);
+            background: var(--rose-bg);
+            color: var(--text);
+            text-align: center;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .pack-input:focus {
+            border-color: var(--lilas);
+            box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.2);
+        }
+
+        .pack-status {
+            width: 100%;
+            margin-top: 8px;
+            font-size: 0.82rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .pack-status.warning {
+            color: var(--red);
+        }
+
+        .pack-status.ok {
+            color: var(--green);
+        }
+
+        .pack-progress {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #e2e8f0;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .pack-progress-bar {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--rose), var(--lilas));
+            transition: width 0.5s ease;
+        }
+
+        .pack-progress-bar.low {
+            background: linear-gradient(90deg, var(--red), #fca5a5);
+        }
+
+        /* ── Second Alert Row ── */
+        .second-alert-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--rose-light);
+            flex-wrap: wrap;
+        }
+
+        .second-alert-row label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .delay-input {
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            width: 60px;
+            padding: 8px 10px;
+            border: 2px solid var(--rose);
+            border-radius: var(--radius-sm);
+            background: var(--rose-bg);
+            color: var(--text);
+            text-align: center;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .delay-input:focus {
+            border-color: var(--lilas);
+            box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.2);
+        }
+
+        .second-alert-status {
+            width: 100%;
+            font-size: 0.78rem;
+            color: var(--text-light);
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        /* ── Install Banner ── */
+        .install-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #f9a8d4, #c084fc);
+            color: #fff;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            z-index: 900;
+            box-shadow: 0 -4px 20px rgba(192, 132, 252, 0.3);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .install-banner.hidden {
+            display: none;
+        }
+
+        .install-banner-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            line-height: 1.4;
+            flex: 1;
+        }
+
+        .install-banner-close {
+            background: rgba(255, 255, 255, 0.25);
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .install-banner-close:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Responsive tweaks ── */
+        @media (min-width: 600px) {
+            .app {
+                padding: 32px 24px 60px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .today-date {
+                font-size: 2.2rem;
+            }
+
+            .calendar-day {
+                font-size: 0.9rem;
+            }
+
+            .calendar-day .day-icons {
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+
+        <!-- Header -->
+        <header class="header">
+            <h1>🌸 Mon Suivi Pilule & Cycle</h1>
+            <p class="subtitle">Prends soin de toi, jour après jour</p>
+        </header>
+
+        <!-- Today Card -->
+        <div class="card" id="today-card">
+            <div class="card-title">Aujourd'hui</div>
+            <div class="today-date" id="today-date"></div>
+            <div class="today-sub" id="today-sub"></div>
+            <div class="today-buttons">
+                <button class="btn-toggle btn-pill" id="btn-pill" onclick="togglePill()">
+                    <span class="btn-check" id="pill-icon">💊</span>
+                    <span id="pill-label">J'ai pris ma pilule</span>
+                </button>
+                <button class="btn-toggle btn-period" id="btn-period" onclick="togglePeriod()">
+                    <span class="btn-check" id="period-icon">🩸</span>
+                    <span id="period-label">J'ai mes règles aujourd'hui</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Calendar Card -->
+        <div class="card" id="calendar-card">
+            <div class="card-title">Calendrier</div>
+            <div class="calendar-nav">
+                <button onclick="changeMonth(-1)" aria-label="Mois précédent">‹</button>
+                <span class="calendar-month" id="calendar-month"></span>
+                <button onclick="changeMonth(1)" aria-label="Mois suivant">›</button>
+            </div>
+            <div class="calendar-grid" id="calendar-grid"></div>
+            <div class="legend">
+                <span class="legend-item">✅ Pilule prise</span>
+                <span class="legend-item">❌ Oubliée</span>
+                <span class="legend-item">⬜ Futur</span>
+                <span class="legend-item" style="background:rgba(249,168,212,0.2);padding:2px 6px;border-radius:6px;">🩸
+                    Règles</span>
+            </div>
+        </div>
+
+        <!-- Pack Countdown Card -->
+        <div class="card" id="pack-card">
+            <div class="card-title">💊 Plaquette</div>
+            <div class="pack-row">
+                <label for="pack-count">Pilules restantes :</label>
+                <input type="number" id="pack-count" class="pack-input" min="0" max="99" value="21"
+                    onchange="savePackCount()" onblur="savePackCount()">
+            </div>
+            <div class="pack-progress">
+                <div class="pack-progress-bar" id="pack-bar"></div>
+            </div>
+            <div class="pack-status" id="pack-status"></div>
+        </div>
+
+        <!-- Reminder Card -->
+        <div class="card" id="reminder-card">
+            <div class="card-title">🔔 Rappel quotidien</div>
+            <div class="reminder-row">
+                <label for="reminder-time">Heure :</label>
+                <input type="time" id="reminder-time" class="reminder-time" value="21:00">
+                <button class="btn-reminder" onclick="setReminder()">Activer</button>
+            </div>
+            <div class="reminder-status" id="reminder-status"></div>
+            <div class="second-alert-row">
+                <label for="alert-delay">⏰ 2ᵉ alerte si oubli après</label>
+                <input type="number" id="alert-delay" class="delay-input" min="1" max="12" value="2">
+                <span style="font-weight:600;font-size:0.85rem;">h</span>
+                <button class="btn-reminder" onclick="saveSecondAlert()"
+                    style="font-size:0.8rem;padding:8px 14px;">OK</button>
+                <div class="second-alert-status" id="second-alert-status"></div>
+            </div>
+        </div>
+
+        <!-- Summary Card -->
+        <div class="card" id="summary-card">
+            <div class="card-title">📊 Résumé du cycle</div>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-value" id="cycle-length">—</div>
+                    <div class="summary-label">Dernier cycle (jours)</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="days-since">—</div>
+                    <div class="summary-label">Jours depuis dernières règles</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="avg-cycle">—</div>
+                    <div class="summary-label">Durée moyenne du cycle</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="next-period">—</div>
+                    <div class="summary-label">Prochaines règles estimées</div>
+                </div>
+            </div>
+            <div class="cycle-prediction" id="fertility-window" style="margin-top:12px;display:none;">
+                🌼 <span id="fertility-text"></span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+        <div class="modal">
+            <h3 id="modal-title">Modifier le jour</h3>
+            <div class="modal-option">
+                <label>💊 Pilule prise</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="modal-pill" onchange="modalChanged()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div class="modal-option">
+                <label>🩸 Règles</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="modal-period" onchange="modalChanged()">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <button class="modal-close" onclick="closeModal()">Fermer</button>
+        </div>
+    </div>
+
+    <!-- Install Banner -->
+    <div class="install-banner hidden" id="install-banner">
+        <span class="install-banner-text">
+            📲 Pour recevoir des rappels sur iPhone, installe l'app :<br>
+            <strong>Safari → Partager → Sur l'écran d'accueil</strong>
+        </span>
+        <button class="install-banner-close" id="install-banner-close" aria-label="Fermer">✕</button>
+    </div>
+
+    <script>
+        // ── Data Layer ──
+        const STORAGE_KEY = 'pilu_data';
+        const REMINDER_KEY = 'pilu_reminder';
+
+        function loadData() {
+            try {
+                return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+            } catch { return {}; }
+        }
+
+        function saveData(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function getDay(dateStr) {
+            const data = loadData();
+            return data[dateStr] || { pill: false, period: false };
+        }
+
+        function setDay(dateStr, info) {
+            const data = loadData();
+            data[dateStr] = info;
+            saveData(data);
+        }
+
+        // ── Date Helpers ──
+        function toDateStr(d) {
+            return d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0');
+        }
+
+        function isToday(d) {
+            const now = new Date();
+            return d.getFullYear() === now.getFullYear() &&
+                d.getMonth() === now.getMonth() &&
+                d.getDate() === now.getDate();
+        }
+
+        function isFuture(d) {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const check = new Date(d);
+            check.setHours(0, 0, 0, 0);
+            return check > now;
+        }
+
+        const MONTHS_FR = [
+            'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+        ];
+
+        const DAYS_FR = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+        const WEEKDAYS_SHORT = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+
+        function formatDateFR(d) {
+            const day = d.getDate();
+            const month = MONTHS_FR[d.getMonth()];
+            const year = d.getFullYear();
+            const weekday = DAYS_FR[d.getDay()];
+            return `${weekday} ${day} ${month} ${year}`;
+        }
+
+        // ── Today Section ──
+        const today = new Date();
+        const todayStr = toDateStr(today);
+
+        function renderToday() {
+            document.getElementById('today-date').textContent =
+                today.getDate() + ' ' + MONTHS_FR[today.getMonth()];
+            document.getElementById('today-sub').textContent = formatDateFR(today);
+
+            const info = getDay(todayStr);
+
+            const btnPill = document.getElementById('btn-pill');
+            const pillIcon = document.getElementById('pill-icon');
+            const pillLabel = document.getElementById('pill-label');
+
+            if (info.pill) {
+                btnPill.classList.add('active');
+                pillIcon.textContent = '✅';
+                pillLabel.textContent = 'Pilule prise !';
+            } else {
+                btnPill.classList.remove('active');
+                pillIcon.textContent = '💊';
+                pillLabel.textContent = "J'ai pris ma pilule";
+            }
+
+            const btnPeriod = document.getElementById('btn-period');
+            const periodIcon = document.getElementById('period-icon');
+            const periodLabel = document.getElementById('period-label');
+
+            if (info.period) {
+                btnPeriod.classList.add('active');
+                periodIcon.textContent = '🩸';
+                periodLabel.textContent = 'Règles en cours';
+            } else {
+                btnPeriod.classList.remove('active');
+                periodIcon.textContent = '🩸';
+                periodLabel.textContent = "J'ai mes règles aujourd'hui";
+            }
+        }
+
+        function togglePill() {
+            const info = getDay(todayStr);
+            const wasPill = info.pill;
+            info.pill = !info.pill;
+            setDay(todayStr, info);
+            renderToday();
+            renderCalendar();
+            renderSummary();
+            animateBtn('btn-pill');
+            // Pack countdown
+            if (info.pill && !wasPill) {
+                decrementPack();
+            } else if (!info.pill && wasPill) {
+                incrementPack();
+            }
+        }
+
+        function togglePeriod() {
+            const info = getDay(todayStr);
+            info.period = !info.period;
+            setDay(todayStr, info);
+            renderToday();
+            renderCalendar();
+            renderSummary();
+            animateBtn('btn-period');
+        }
+
+        function animateBtn(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('pulse');
+            void el.offsetWidth;
+            el.classList.add('pulse');
+        }
+
+        // ── Calendar ──
+        let viewYear = today.getFullYear();
+        let viewMonth = today.getMonth();
+
+        function changeMonth(delta) {
+            viewMonth += delta;
+            if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+            if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            document.getElementById('calendar-month').textContent =
+                MONTHS_FR[viewMonth] + ' ' + viewYear;
+
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+
+            // Weekday headers (Mon-first)
+            WEEKDAYS_SHORT.forEach(w => {
+                const el = document.createElement('div');
+                el.className = 'calendar-weekday';
+                el.textContent = w;
+                grid.appendChild(el);
+            });
+
+            const firstDay = new Date(viewYear, viewMonth, 1);
+            let startDay = firstDay.getDay(); // 0=Sun
+            // Convert to Monday-first: Mon=0, Sun=6
+            startDay = (startDay + 6) % 7;
+
+            const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+            // Empty cells
+            for (let i = 0; i < startDay; i++) {
+                const el = document.createElement('div');
+                el.className = 'calendar-day empty';
+                grid.appendChild(el);
+            }
+
+            // Day cells
+            for (let d = 1; d <= daysInMonth; d++) {
+                const date = new Date(viewYear, viewMonth, d);
+                const dateStr = toDateStr(date);
+                const info = getDay(dateStr);
+                const future = isFuture(date);
+
+                const el = document.createElement('div');
+                el.className = 'calendar-day';
+
+                if (isToday(date)) el.classList.add('today');
+                if (info.period) el.classList.add('period-day');
+                if (future) el.classList.add('future');
+
+                const numSpan = document.createElement('span');
+                numSpan.className = 'day-num';
+                numSpan.textContent = d;
+
+                const iconsSpan = document.createElement('span');
+                iconsSpan.className = 'day-icons';
+
+                if (!future) {
+                    iconsSpan.textContent = info.pill ? '✅' : '❌';
+                } else {
+                    iconsSpan.textContent = '⬜';
+                }
+
+                el.appendChild(numSpan);
+                el.appendChild(iconsSpan);
+
+                el.addEventListener('click', () => openModal(dateStr));
+                grid.appendChild(el);
+            }
+        }
+
+        // ── Modal ──
+        let modalDateStr = null;
+
+        function openModal(dateStr) {
+            modalDateStr = dateStr;
+            const parts = dateStr.split('-');
+            const d = new Date(parts[0], parts[1] - 1, parts[2]);
+            document.getElementById('modal-title').textContent =
+                '📅 ' + d.getDate() + ' ' + MONTHS_FR[d.getMonth()] + ' ' + d.getFullYear();
+
+            const info = getDay(dateStr);
+            document.getElementById('modal-pill').checked = info.pill;
+            document.getElementById('modal-period').checked = info.period;
+
+            document.getElementById('modal-overlay').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('show');
+            modalDateStr = null;
+        }
+
+        function closeModalOutside(e) {
+            if (e.target === document.getElementById('modal-overlay')) closeModal();
+        }
+
+        function modalChanged() {
+            if (!modalDateStr) return;
+            const info = {
+                pill: document.getElementById('modal-pill').checked,
+                period: document.getElementById('modal-period').checked
+            };
+            setDay(modalDateStr, info);
+            renderCalendar();
+            if (modalDateStr === todayStr) renderToday();
+            renderSummary();
+        }
+
+        // ── Reminder ──
+        let reminderInterval = null;
+
+
+
+        function setReminder() {
+            const time = document.getElementById('reminder-time').value;
+            if (!time) return;
+
+            // Request notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(perm => {
+                    if (perm === 'granted') {
+                        saveAndStartReminder(time);
+                    } else {
+                        updateReminderStatus('⚠️ Notifications refusées par le navigateur');
+                    }
+                });
+            } else if ('Notification' in window && Notification.permission === 'granted') {
+                saveAndStartReminder(time);
+            } else if ('Notification' in window && Notification.permission === 'denied') {
+                updateReminderStatus('⚠️ Notifications bloquées. Modifie les paramètres du navigateur.');
+            } else {
+                updateReminderStatus('⚠️ Notifications non supportées');
+            }
+        }
+
+        function saveAndStartReminder(time) {
+            const delayH = parseInt(document.getElementById('alert-delay').value) || 2;
+            localStorage.setItem(REMINDER_KEY, JSON.stringify({ time, delayH }));
+            startReminderCheck(time, delayH);
+            notifySWReminder(time);
+            updateReminderStatus(`✅ Rappel activé à ${time}`);
+        }
+
+        function startReminderCheck(time, delayH) {
+            if (reminderInterval) clearInterval(reminderInterval);
+            updateReminderStatus(`✅ Rappel programmé à ${time}`);
+
+            let notifiedToday = false;
+            let secondAlertSent = false;
+
+            // Parse reminder hour/min
+            const [rH, rM] = time.split(':').map(Number);
+
+            reminderInterval = setInterval(() => {
+                const now = new Date();
+                const nowTime = String(now.getHours()).padStart(2, '0') + ':' +
+                    String(now.getMinutes()).padStart(2, '0');
+
+                if (nowTime === time && !notifiedToday) {
+                    notifiedToday = true;
+                    secondAlertSent = false;
+                    sendNotification();
+                }
+
+                // Second alert check
+                if (notifiedToday && !secondAlertSent && delayH > 0) {
+                    const secondH = (rH + delayH) % 24;
+                    const secondTime = String(secondH).padStart(2, '0') + ':' + String(rM).padStart(2, '0');
+                    if (nowTime === secondTime) {
+                        const todayInfo = getDay(todayStr);
+                        if (!todayInfo.pill) {
+                            secondAlertSent = true;
+                            sendSecondAlert();
+                        }
+                    }
+                }
+
+                // Reset at midnight
+                if (nowTime === '00:00') {
+                    notifiedToday = false;
+                    secondAlertSent = false;
+                }
+            }, 15000); // check every 15s
+        }
+
+        function sendNotification() {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification("N'oublie pas ta pilule ! 💊", {
+                    body: 'Il est temps de prendre ta pilule contraceptive 🌸',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80" font-size="80">💊</text></svg>'
+                });
+            }
+        }
+
+        function sendSecondAlert() {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Tu as oublié ta pilule aujourd\'hui ⚠️', {
+                    body: 'Tu n\'as pas encore marqué ta pilule comme prise !',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80" font-size="80">⚠️</text></svg>',
+                    tag: 'pill-second-alert',
+                    renotify: true
+                });
+            }
+        }
+
+        function saveSecondAlert() {
+            const delayH = parseInt(document.getElementById('alert-delay').value) || 2;
+            const saved = JSON.parse(localStorage.getItem(REMINDER_KEY) || '{}');
+            saved.delayH = delayH;
+            localStorage.setItem(REMINDER_KEY, JSON.stringify(saved));
+            if (saved.time) {
+                startReminderCheck(saved.time, delayH);
+            }
+            const el = document.getElementById('second-alert-status');
+            el.textContent = `✅ 2ᵉ alerte ${delayH}h après le rappel`;
+        }
+
+        function updateReminderStatus(msg) {
+            const el = document.getElementById('reminder-status');
+            el.textContent = msg;
+            el.className = 'reminder-status' + (msg.startsWith('✅') ? ' active-reminder' : '');
+        }
+
+        // ── Pack Countdown ──
+        const PACK_KEY = 'pilu_pack';
+
+        function loadPack() {
+            const saved = localStorage.getItem(PACK_KEY);
+            const count = saved !== null ? parseInt(saved) : 21;
+            document.getElementById('pack-count').value = count;
+            renderPackStatus(count);
+        }
+
+        function savePackCount() {
+            const val = parseInt(document.getElementById('pack-count').value) || 0;
+            localStorage.setItem(PACK_KEY, val);
+            renderPackStatus(val);
+        }
+
+        function decrementPack() {
+            let val = parseInt(localStorage.getItem(PACK_KEY));
+            if (isNaN(val)) val = 21;
+            val = Math.max(0, val - 1);
+            localStorage.setItem(PACK_KEY, val);
+            document.getElementById('pack-count').value = val;
+            renderPackStatus(val);
+        }
+
+        function incrementPack() {
+            let val = parseInt(localStorage.getItem(PACK_KEY));
+            if (isNaN(val)) val = 21;
+            val = val + 1;
+            localStorage.setItem(PACK_KEY, val);
+            document.getElementById('pack-count').value = val;
+            renderPackStatus(val);
+        }
+
+        function renderPackStatus(count) {
+            const statusEl = document.getElementById('pack-status');
+            const barEl = document.getElementById('pack-bar');
+            const maxPills = 21;
+            const pct = Math.min(100, Math.max(0, (count / maxPills) * 100));
+            barEl.style.width = pct + '%';
+            barEl.className = 'pack-progress-bar' + (count <= 3 ? ' low' : '');
+
+            if (count <= 0) {
+                statusEl.textContent = '🚨 Plaquette terminée ! Pense à en commencer une nouvelle.';
+                statusEl.className = 'pack-status warning';
+            } else if (count <= 3) {
+                statusEl.textContent = `⚠️ Plus que ${count} pilule${count > 1 ? 's' : ''} ! Pense à renouveler ta plaquette.`;
+                statusEl.className = 'pack-status warning';
+            } else {
+                statusEl.textContent = `${count} pilule${count > 1 ? 's' : ''} restante${count > 1 ? 's' : ''}`;
+                statusEl.className = 'pack-status ok';
+            }
+        }
+
+        // ── Summary ──
+        function getPeriodStarts() {
+            const data = loadData();
+            const periodDays = [];
+            Object.keys(data).forEach(dateStr => {
+                if (data[dateStr].period) periodDays.push(dateStr);
+            });
+            periodDays.sort();
+
+            const periodStarts = [];
+            let lastPeriodDate = null;
+            periodDays.forEach(dateStr => {
+                const d = new Date(dateStr + 'T00:00:00');
+                if (!lastPeriodDate) {
+                    periodStarts.push(d);
+                } else {
+                    const diff = (d - lastPeriodDate) / (1000 * 60 * 60 * 24);
+                    if (diff > 2) {
+                        periodStarts.push(d);
+                    }
+                }
+                lastPeriodDate = d;
+            });
+            return periodStarts;
+        }
+
+        function renderSummary() {
+            const periodStarts = getPeriodStarts();
+
+            // Reset
+            document.getElementById('cycle-length').textContent = '—';
+            document.getElementById('days-since').textContent = '—';
+            document.getElementById('avg-cycle').textContent = '—';
+            document.getElementById('next-period').textContent = '—';
+            document.getElementById('fertility-window').style.display = 'none';
+
+            if (periodStarts.length === 0) return;
+
+            // Compute cycle lengths
+            const cycleLengths = [];
+            for (let i = 1; i < periodStarts.length; i++) {
+                const diff = Math.round((periodStarts[i] - periodStarts[i - 1]) / (1000 * 60 * 60 * 24));
+                if (diff > 15 && diff < 60) cycleLengths.push(diff); // sane range
+            }
+
+            // Last cycle length
+            if (cycleLengths.length > 0) {
+                document.getElementById('cycle-length').textContent = cycleLengths[cycleLengths.length - 1];
+            }
+
+            // Average cycle
+            let avgCycle = 28; // default
+            if (cycleLengths.length > 0) {
+                avgCycle = Math.round(cycleLengths.reduce((a, b) => a + b, 0) / cycleLengths.length);
+                document.getElementById('avg-cycle').textContent = avgCycle + 'j';
+            }
+
+            // Days since last period
+            const lastPeriodStart = periodStarts[periodStarts.length - 1];
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const daysSince = Math.floor((now - lastPeriodStart) / (1000 * 60 * 60 * 24));
+            document.getElementById('days-since').textContent = daysSince >= 0 ? daysSince : '—';
+
+            // Predicted next period
+            if (cycleLengths.length > 0) {
+                const nextDate = new Date(lastPeriodStart);
+                nextDate.setDate(nextDate.getDate() + avgCycle);
+                const nextStr = nextDate.getDate() + ' ' + MONTHS_FR[nextDate.getMonth()];
+                document.getElementById('next-period').textContent = nextStr;
+            }
+
+            // Fertility window (ovulation ≈ avgCycle - 14, fertile J-5 to J+1)
+            if (cycleLengths.length > 0) {
+                const ovulationDay = avgCycle - 14;
+                const fertStart = Math.max(1, ovulationDay - 5);
+                const fertEnd = ovulationDay + 1;
+
+                const fertStartDate = new Date(lastPeriodStart);
+                fertStartDate.setDate(fertStartDate.getDate() + fertStart);
+                const fertEndDate = new Date(lastPeriodStart);
+                fertEndDate.setDate(fertEndDate.getDate() + fertEnd);
+
+                const fertEl = document.getElementById('fertility-window');
+                const fertText = document.getElementById('fertility-text');
+                fertText.textContent = `Fenêtre de fertilité estimée : J${fertStart}–J${fertEnd} (${fertStartDate.getDate()} ${MONTHS_FR[fertStartDate.getMonth()]} – ${fertEndDate.getDate()} ${MONTHS_FR[fertEndDate.getMonth()]})`;
+                fertEl.style.display = 'block';
+            }
+        }
+
+        // ── Service Worker & PWA ──
+        let swRegistration = null;
+
+        async function registerSW() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    swRegistration = await navigator.serviceWorker.register('./sw.js');
+                    console.log('Service Worker registered');
+                } catch (err) {
+                    console.log('SW registration failed:', err);
+                }
+            }
+        }
+
+        // Send reminder time to the service worker
+        function notifySWReminder(timeStr) {
+            if (swRegistration && swRegistration.active) {
+                const [h, m] = timeStr.split(':').map(Number);
+                swRegistration.active.postMessage({
+                    type: 'SCHEDULE_NOTIFICATION',
+                    hour: h,
+                    minute: m
+                });
+            }
+        }
+
+        // ── Install Banner ──
+        function checkInstallBanner() {
+            const isStandalone = window.navigator.standalone === true ||
+                window.matchMedia('(display-mode: standalone)').matches;
+            const dismissed = localStorage.getItem('pilu_banner_dismissed');
+
+            const banner = document.getElementById('install-banner');
+            const closeBtn = document.getElementById('install-banner-close');
+
+            if (!isStandalone && !dismissed) {
+                banner.classList.remove('hidden');
+            }
+
+            closeBtn.addEventListener('click', () => {
+                banner.classList.add('hidden');
+                localStorage.setItem('pilu_banner_dismissed', '1');
+            });
+        }
+
+        // ── Load Reminder with second alert ──
+        function loadReminder() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(REMINDER_KEY));
+                if (saved && saved.time) {
+                    document.getElementById('reminder-time').value = saved.time;
+                    const delayH = saved.delayH || 2;
+                    document.getElementById('alert-delay').value = delayH;
+                    startReminderCheck(saved.time, delayH);
+                    const el = document.getElementById('second-alert-status');
+                    el.textContent = `✅ 2ᵉ alerte ${delayH}h après le rappel`;
+                }
+            } catch { }
+        }
+
+        // ── Init ──
+        function init() {
+            renderToday();
+            renderCalendar();
+            renderSummary();
+            loadPack();
+            loadReminder();
+            registerSW();
+            checkInstallBanner();
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
